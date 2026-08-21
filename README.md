@@ -17,7 +17,7 @@ SatyaFin is an AI-powered, SEBI-focused fraud detection tool designed for identi
                                       │ Forward Payload
                                       ▼
                        ┌──────────────────────────────┐
-                       │    Python FastAPI Micro    │
+                       │    Python FastAPI Micro      │
                        │    AI & Risk Engine (8000)   │
                        └──────────────────────────────┘
 The system comprises 4 core modules matching team workflows:
