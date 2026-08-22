@@ -5,12 +5,13 @@ from pydantic import BaseModel, EmailStr, Field
 
 class User(Document):
     email: EmailStr
+    username: str = Field(min_length=3, max_length=32)
     password_hash: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     class Settings:
         name = "users"
-        indexes = ["email"]
+        indexes = ["email", "username"]
 
 
 class RiskReport(Document):
@@ -36,11 +37,17 @@ class RiskReport(Document):
 
 class RegisterRequest(BaseModel):
     email: EmailStr
+    username: str = Field(min_length=3, max_length=32, pattern=r"^[A-Za-z0-9_.-]+$")
     password: str = Field(min_length=8, max_length=128)
 
 
-class LoginRequest(RegisterRequest):
-    pass
+class LoginRequest(BaseModel):
+    username: str = Field(min_length=3, max_length=32)
+    password: str = Field(min_length=8, max_length=128)
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=2000)
 
 
 class TokenResponse(BaseModel):

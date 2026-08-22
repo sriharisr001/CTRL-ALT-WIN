@@ -1,12 +1,14 @@
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+import logging
 import math
 from pathlib import Path
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from database import close_database, connect_database
 from models import AnalysisInput, LoginRequest, RegisterRequest, RiskReport, TokenResponse, User
+from routers.chat import router as chat_router
 from security import create_access_token, current_user, hash_password, verify_password
 from services.scoring import level, score
 from services.stock import get_market_data, promised_trajectory
@@ -25,7 +27,16 @@ async def lifespan(app: FastAPI):
     await close_database()
 
 
-app = FastAPI(title="SatyaFin AI", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="SatyaFin AI", version="1.1.0", lifespan=lifespan)
+app.include_router(chat_router, prefix="/api", tags=["AI Chatbot"])
+logger = logging.getLogger("satyafin")
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(_, exc: Exception):
+    """Log unexpected failures without returning HTML/plain-text to the SPA."""
+    logger.exception("Unhandled API error", exc_info=exc)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error. Check the server log and retry."})
 
 
 def require_database() -> None:
@@ -38,7 +49,9 @@ async def register(payload: RegisterRequest):
     require_database()
     if await User.find_one(User.email == payload.email):
         raise HTTPException(409, "An account already exists for this email")
-    user = User(email=payload.email, password_hash=hash_password(payload.password))
+    if await User.find_one(User.username == payload.username):
+        raise HTTPException(409, "That username is already taken")
+    user = User(email=payload.email, username=payload.username, password_hash=hash_password(payload.password))
     await user.insert()
     return TokenResponse(access_token=create_access_token(str(user.id)))
 
@@ -46,9 +59,9 @@ async def register(payload: RegisterRequest):
 @app.post("/api/auth/login", response_model=TokenResponse)
 async def login(payload: LoginRequest):
     require_database()
-    user = await User.find_one(User.email == payload.email)
+    user = await User.find_one(User.username == payload.username)
     if not user or not verify_password(payload.password, user.password_hash):
-        raise HTTPException(401, "Incorrect email or password")
+        raise HTTPException(401, "Incorrect username or password")
     return TokenResponse(access_token=create_access_token(str(user.id)))
 
 
