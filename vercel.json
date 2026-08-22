@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:match*",
-      "destination": "https://your-backend-name.onrender.com/api/:match*"
+      "destination": "https://ctrl-alt-win-backend.onrender.com/api/:match*"
     },
     {
       "source": "/(.*)",
