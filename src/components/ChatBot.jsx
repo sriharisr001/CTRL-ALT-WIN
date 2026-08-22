@@ -12,7 +12,10 @@ export default function ChatBot() {
   const [loading, setLoading] = useState(false); 
   const endRef = useRef(null)
 
-  useEffect(() => endRef.current?.scrollIntoView({ behavior: 'smooth' }), [messages, loading])
+  // FIX: Added curly braces to prevent returning a non-function value
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading])
 
   const send = async (text = input) => { 
     const message = text.trim(); 
@@ -57,7 +60,6 @@ export default function ChatBot() {
           
           {loading && (
             <div className="message assistant typing">
-              {/* Replaced LoaderCircle with Loader2 here */}
               <Loader2 className="spin" size={16} /> SatyaFin AI Chatbot is reviewing…
             </div>
           )}
