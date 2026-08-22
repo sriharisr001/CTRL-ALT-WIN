@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from beanie import Document, PydanticObjectId
+from typing import Any
 from pydantic import BaseModel, EmailStr, Field
+from typing import Any, Literal
 
 
 class User(Document):
@@ -46,8 +48,15 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=8, max_length=128)
 
 
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=4000)
+
+
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
+    report_context: dict[str, Any] | None = None
+    chat_history: list[ChatMessage] = Field(default_factory=list, max_length=20)
 
 
 class TokenResponse(BaseModel):

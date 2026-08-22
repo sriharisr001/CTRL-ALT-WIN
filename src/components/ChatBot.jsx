@@ -20,6 +20,7 @@ export default function ChatBot() {
   const send = async (text = input) => { 
     const message = text.trim(); 
     if (!message || loading) return; 
+    const chat_history = messages.map(({ role, content }) => ({ role, content }));
     setMessages(items => [...items, { role: 'user', content: message }]); 
     setInput(''); 
     setLoading(true); 
@@ -28,7 +29,7 @@ export default function ChatBot() {
       const response = await fetch('/api/chat', { 
         method: 'POST', 
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, 
-        body: JSON.stringify({ message }) 
+        body: JSON.stringify({ message, report_context: null, chat_history }) 
       }); 
       const data = await readApiResponse(response); 
       setMessages(items => [...items, { role: 'assistant', content: data.message }]) 
