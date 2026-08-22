@@ -4,6 +4,7 @@ import logging
 import math
 from pathlib import Path
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from database import close_database, connect_database
@@ -28,6 +29,18 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="SatyaFin AI", version="1.1.0", lifespan=lifespan)
+origins = [
+    "http://localhost:5173", # Keep this for local testing
+    "https://ctrl-alt-win.vercel.app" # Your live Vercel frontend
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(chat_router, prefix="/api", tags=["AI Chatbot"])
 logger = logging.getLogger("satyafin")
 
