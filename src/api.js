@@ -1,4 +1,5 @@
 /** Parse API responses defensively, including plain-text FastAPI/proxy failures. */
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://ctrl-alt-win-backend.onrender.com";
 export async function readApiResponse(response) {
   const raw = await response.text()
   let data = null
